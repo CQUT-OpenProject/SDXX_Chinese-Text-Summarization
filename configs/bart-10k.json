@@ -1,0 +1,11 @@
+{
+  "model_name": "OpenMOSS-Team/bart-base-chinese",
+  "model_revision": "ffbee86596e8b14cfb1ef20d4cafa2ea30d272f8",
+  "train_file": "data/processed/train.jsonl",
+  "validation_file": "data/processed/validation.jsonl",
+  "test_file": "data/processed/test.jsonl",
+  "output_dir": "outputs/bart-10k",
+  "seed": 42, "max_source_length": 128, "max_target_length": 32,
+  "batch_size": 4, "learning_rate": 0.00003, "epochs": 3,
+  "generation": {"strategy": "beam", "num_beams": 4}
+}
