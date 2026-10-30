@@ -1,0 +1,82 @@
+{
+  "lead30": {
+    "count": 725,
+    "method": "lead30",
+    "strategy": null,
+    "scores": {
+      "rouge1": 0.2494860108868069,
+      "rouge2": 0.14272277888554322,
+      "rougeL": 0.2138170939288773
+    },
+    "generation_seconds": 0.00015922200009299559,
+    "mean_prediction_chars": 30.0
+  },
+  "textrank": {
+    "count": 725,
+    "method": "textrank_sentence",
+    "scores": {
+      "rouge1": 0.24374861580409982,
+      "rouge2": 0.13752873630182977,
+      "rougeL": 0.20903993915145033
+    },
+    "mean_prediction_chars": 28.532413793103448,
+    "generation_seconds": 0.06424391500013371,
+    "settings": {
+      "sentence_delimiters": "。！？!?；; and newline",
+      "tokenization": "Chinese characters, lowercase Latin alphanumeric runs",
+      "edge_weight": "multiset overlap / (log(1 + token_count_i) + log(1 + token_count_j))",
+      "damping": 0.85,
+      "max_iterations": 100,
+      "tolerance": 1e-08,
+      "selection": "highest scoring sentence; first on ties; first 30 characters"
+    }
+  },
+  "bart-2k-greedy": {
+    "count": 725,
+    "method": "model",
+    "strategy": "greedy",
+    "scores": {
+      "rouge1": 0.31736037382320725,
+      "rouge2": 0.19576629798052217,
+      "rougeL": 0.2889058900110314
+    },
+    "generation_seconds": 60.13370526099993,
+    "mean_prediction_chars": 16.915862068965517
+  },
+  "bart-2k-beam": {
+    "count": 725,
+    "method": "model",
+    "strategy": "beam",
+    "scores": {
+      "rouge1": 0.3213468311889769,
+      "rouge2": 0.20276733902983393,
+      "rougeL": 0.292265203586005
+    },
+    "generation_seconds": 75.05192917299996,
+    "mean_prediction_chars": 16.416551724137932
+  },
+  "bart-10k-greedy": {
+    "count": 725,
+    "method": "model",
+    "strategy": "greedy",
+    "scores": {
+      "rouge1": 0.3478775967613879,
+      "rouge2": 0.21965610870978225,
+      "rougeL": 0.31249749411809796
+    },
+    "generation_seconds": 54.43805585599989,
+    "mean_prediction_chars": 16.36551724137931
+  },
+  "bart-10k-beam": {
+    "count": 725,
+    "method": "model",
+    "strategy": "beam",
+    "scores": {
+      "rouge1": 0.34798613469094897,
+      "rouge2": 0.22288019805933368,
+      "rougeL": 0.3139527017091865
+    },
+    "generation_seconds": 68.88384863400006,
+    "mean_prediction_chars": 15.841379310344827
+  }
+}

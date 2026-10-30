@@ -2,9 +2,10 @@ import argparse
 import json
 import shutil
 import sys
+import time
 from pathlib import Path
 
-from .data import read_records, sample_records, write_jsonl
+from .data import iter_records, read_records, sample_stream, write_jsonl
 from .metrics import aggregate
 
 
@@ -20,9 +21,15 @@ def prepare(args):
     out = Path(args.output_dir).resolve()
     if any(path == (out / f"{name}.jsonl") for path in paths for name in ("train", "validation", "test")):
         raise ValueError("输出文件不能覆盖任何输入文件")
+    excluded = set()
+    if args.exclude_eval_texts:
+        for path in paths[1:]:
+            excluded.update(row["text"] for row in iter_records(path, args.text_field, args.summary_field))
     for name, path, count in zip(("train", "validation", "test"), paths, (args.train_size, args.validation_size, None)):
-        rows = read_records(path, args.text_field, args.summary_field)
-        rows = sample_records(rows, count, args.seed)
+        records = iter_records(path, args.text_field, args.summary_field)
+        if name == "train" and excluded:
+            records = (row for row in records if row["text"] not in excluded)
+        rows = sample_stream(records, count, args.seed) if count is not None else list(records)
         write_jsonl(out / f"{name}.jsonl", rows)
         print(f"{name}: {len(rows)} 条 -> {out / (name + '.jsonl')}")
 
@@ -33,8 +40,9 @@ def train(args):
 
     cfg = load_config(args.config)
     set_seed(cfg["seed"])
-    tokenizer = AutoTokenizer.from_pretrained(cfg["model_name"])
-    model = AutoModelForSeq2SeqLM.from_pretrained(cfg["model_name"])
+    revision = cfg.get("model_revision", "main")
+    tokenizer = AutoTokenizer.from_pretrained(cfg["model_name"], revision=revision)
+    model = AutoModelForSeq2SeqLM.from_pretrained(cfg["model_name"], revision=revision)
     def tokenize(batch):
         inputs = tokenizer(batch["text"], max_length=cfg["max_source_length"], truncation=True)
         targets = tokenizer(text_target=batch["summary"], max_length=cfg["max_target_length"], truncation=True)
@@ -50,7 +58,7 @@ def train(args):
         load_best_model_at_end=True, metric_for_best_model="eval_loss", greater_is_better=False,
         per_device_train_batch_size=cfg["batch_size"], per_device_eval_batch_size=cfg["batch_size"],
         learning_rate=cfg["learning_rate"], num_train_epochs=cfg["epochs"], seed=cfg["seed"],
-        save_total_limit=2, report_to="none", use_cpu=args.cpu,
+        save_total_limit=2, report_to="none", use_cpu=args.cpu, logging_steps=50,
     )
     trainer = Seq2SeqTrainer(model=model, args=training_args, train_dataset=training,
                              eval_dataset=validation, data_collator=DataCollatorForSeq2Seq(tokenizer, model=model),
@@ -59,6 +67,7 @@ def train(args):
     final = output / "best_model"
     trainer.save_model(str(final))
     tokenizer.save_pretrained(str(final))
+    trainer.state.save_to_json(str(output / "trainer_state.json"))
     shutil.copyfile(args.config, output / "experiment_config.json")
     print(f"最佳模型已保存至 {final}")
 
@@ -77,7 +86,7 @@ def generator(cfg, model_path, strategy, cpu):
     if beams < 1:
         raise ValueError("num_beams 必须大于零")
     def generate(text):
-        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=cfg["max_source_length"]).to(device)
+        inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=cfg["max_source_length"], return_token_type_ids=False).to(device)
         with torch.inference_mode():
             ids = model.generate(**inputs, max_new_tokens=cfg["max_target_length"], num_beams=beams, do_sample=False)
         # BERT tokenizer inserts spaces between Chinese characters during decoding.
@@ -102,12 +111,14 @@ def evaluate(args):
         generate = lambda text: text[:30]
     else:
         generate = generator(cfg, model_path(args, cfg), args.strategy, args.cpu)
+    start = time.perf_counter()
     results = [{**row, "prediction": generate(row["text"])} for row in rows]
+    elapsed = time.perf_counter() - start
     metrics = aggregate([r["prediction"] for r in results], [r["summary"] for r in results])
     output = Path(args.output_dir)
     output.mkdir(parents=True, exist_ok=True)
     write_jsonl(output / "predictions.jsonl", results)
-    (output / "metrics.json").write_text(json.dumps({"count": len(rows), "method": args.method, "strategy": (args.strategy or cfg["generation"]["strategy"]) if args.method == "model" else None, "scores": metrics}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (output / "metrics.json").write_text(json.dumps({"count": len(rows), "method": args.method, "strategy": (args.strategy or cfg["generation"]["strategy"]) if args.method == "model" else None, "scores": metrics, "generation_seconds": elapsed, "mean_prediction_chars": sum(len(r["prediction"]) for r in results) / len(results)}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps(metrics, ensure_ascii=False, indent=2))
 
 
@@ -122,6 +133,7 @@ def main():
     p.add_argument("--train-size", type=int)
     p.add_argument("--validation-size", type=int)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--exclude-eval-texts", action="store_true", help="从训练输入排除与验证或测试原文完全相同的记录")
     p.add_argument("--output-dir", default="data/processed")
     p.set_defaults(func=prepare)
     p = sub.add_parser("train", help="微调 BART")

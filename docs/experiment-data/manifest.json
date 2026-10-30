@@ -1,0 +1,24 @@
+{
+  "dataset": "aligeniewcp22/LCSTS",
+  "dataset_revision": "0056707cbf6a5ece8a70c550ed00a451a7449903",
+  "holdout": "725 examples sampled from labeled validation split; not official test set",
+  "sha256": {
+    "data/processed-2k/train.jsonl": "f3fedc83472deef7de6574369039c7dedc16a9a010e678ec0362ea5d5c4f052d",
+    "data/processed/train.jsonl": "38ed53e33466784336cd1546288180106031814e0ad923ffa60ea9368bca5205",
+    "data/processed/validation.jsonl": "bc9c4f659f0ad09f0b047e0ee4174ac54357855dfc5d904328f794e09fb981e7",
+    "data/processed/test.jsonl": "de3171c2bfc967be79a1718572f9aefe8640f42b8de2af78a2fff6be49768511",
+    "configs/bart-2k.json": "d798ece455654a08e67df3d4f97f73e77f7d33391123d9ca1f570538a8b3e716",
+    "configs/bart-10k.json": "8a0e1518bd57953031c31f81be1798e4b45045841eeec5925940323a6536c1d1",
+    "src/summarizer/cli.py": "1cfe16f9dd3f7650beffde363190c5459b7adc6343658018a29dc1af3b3d55ff",
+    "src/summarizer/data.py": "7b5ca670240042c811c45d349bf926062710d95d6de51a6f8604c8f40e3efb1c",
+    "src/summarizer/metrics.py": "414d19458f766e6b4d2388e67abb44514fec3cd5737077251b7cd42a415a1559",
+    "scripts/split_lcsts_validation.py": "b092e1066cb0c926665ea6dd4dda38f0eab28e6f555fb107019da89374f80d86"
+  },
+  "python": "3.11.18",
+  "torch": "2.6.0+cu124",
+  "cuda_runtime": "12.4",
+  "transformers": "4.57.6",
+  "datasets": "3.6.0",
+  "accelerate": "1.15.0",
+  "gpu": "NVIDIA GeForce RTX 4070 SUPER"
+}

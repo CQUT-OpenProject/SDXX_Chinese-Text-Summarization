@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 .env
 .pytest_cache/
+.cache/
 *.egg-info/
 build/
 dist/
@@ -12,3 +13,13 @@ outputs/
 *.pth
 *.safetensors
 .DS_Store
+
+# LaTeX build intermediates
+*.aux
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.xdv
