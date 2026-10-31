@@ -1,0 +1,8 @@
+{
+  "source": "data/raw/lcsts/valid.jsonl",
+  "seed": 42,
+  "validation": 1000,
+  "holdout": 725,
+  "unique_source_texts": 8505,
+  "note": "Local split of labeled validation data; holdout is not the official test set."
+}
