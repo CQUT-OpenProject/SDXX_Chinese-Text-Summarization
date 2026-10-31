@@ -1,8 +1,8 @@
 # 中文短文本摘要生成
 
-《深度学习》课程项目：使用中文 BART 研究短文本摘要，并比较原文截取、TextRank、训练数据规模和解码方式。
+《深度学习》课程设计：使用中文 BART 研究短文本摘要，并比较原文截取、TextRank、训练数据规模和解码方式。
 
-项目当前不包含训练数据、模型权重、预测或实验结果。论文保留了实验方案及待填写的位置：[报告 PDF](docs/report/template.pdf) · [LaTeX 源文件](docs/report/template.tex) · [报告说明](docs/report/README.md)。
+[课程报告 PDF](<docs/基于 Transformer 的中文短文本摘要生成方法实现与研究.pdf>) · [实验数据与结果](docs/experiment-data/README.md) · [LaTeX 报告模板](<report(template)/template.tex>)
 
 ## 环境与数据准备
 
@@ -19,7 +19,7 @@ docker build -t chinese-summarizer .
 docker run --rm -v "$PWD:/workspace" -e PYTHONPATH=/workspace/src chinese-summarizer sh scripts/prepare_data.sh
 ```
 
-自划分测试集来自整理版本的有标签验证数据，不是官方测试集。公开再分发数据前请核实数据来源的使用条件。
+自划分测试集从整理版本的有标签验证数据中抽取。公开再分发数据时，请遵守数据来源的使用条件。
 
 ## 训练与评价
 
@@ -36,11 +36,8 @@ PYTHONPATH=src python -m summarizer.cli train --config configs/bart-10k.json
 docker run --rm -v "$PWD:/workspace" -e PYTHONPATH=/workspace/src chinese-summarizer sh scripts/run_experiments.sh
 ```
 
-如容器支持 NVIDIA GPU，需使用适合该设备的 PyTorch/CUDA 环境并配置 GPU 直通。各方法的结果写入 `outputs/experiments/`，模型及训练记录写入 `outputs/bart-2k/` 和 `outputs/bart-10k/`；这些文件不纳入 Git。训练完成后，根据实际结果填写报告，并重新生成损失曲线：
-
-```bash
-python -m pip install reportlab
-python scripts/report_figures.py
-```
+如容器支持 NVIDIA GPU，需使用适合该设备的 PyTorch/CUDA 环境并配置 GPU 直通。各方法的结果写入 `outputs/experiments/`，模型及训练记录写入 `outputs/bart-2k/` 和 `outputs/bart-10k/`。
 
 测试代码可通过 `PYTHONPATH=src python -m unittest discover -s tests -v` 运行。
+
+实验图表可通过 `python scripts/report_figures.py` 生成到 `outputs/report-figures/`；脚本需要 ReportLab 和 macOS 中文字体。
